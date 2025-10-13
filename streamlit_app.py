@@ -48,22 +48,15 @@ if st.session_state.get('correct', False):
     cols = st.columns(user_bits)
     weights = [2**i for i in reversed(range(user_bits))]  # MSB~LSB
 
-    # 버튼 행
+    # 각 열(비트)에 대해 버튼, 가중치, 선택값을 세로로 정렬
     for i, col in enumerate(cols):
-        if col.button(f"{user_bits-i-1}번 비트", key=f"bit_btn_{i}"):
-            st.session_state.bits[i] = not st.session_state.bits[i]
-
-    # 가중치 행 (가로)
-    weight_row = st.columns(user_bits)
-    for i, col in enumerate(weight_row):
-        col.markdown(f"<div style='text-align:center; color:gray;'>{weights[i]}</div>", unsafe_allow_html=True)
-
-    # 선택한 비트 행 (가로)
-    bit_row = st.columns(user_bits)
-    for i, col in enumerate(bit_row):
-        val = "1" if st.session_state.bits[i] else "0"
-        color = "#4CAF50" if st.session_state.bits[i] else "#ddd"
-        col.markdown(f"<div style='text-align:center; background:{color}; border-radius:5px; padding:4px 0;'>{val}</div>", unsafe_allow_html=True)
+        with col:
+            if st.button(f"{user_bits-i-1}번 비트", key=f"bit_btn_{i}"):
+                st.session_state.bits[i] = not st.session_state.bits[i]
+            st.markdown(f"<div style='text-align:center; color:gray; margin-top:4px'>{weights[i]}</div>", unsafe_allow_html=True)
+            val = "1" if st.session_state.bits[i] else "0"
+            color = "#4CAF50" if st.session_state.bits[i] else "#ddd"
+            st.markdown(f"<div style='text-align:center; background:{color}; border-radius:5px; padding:4px 0; margin-top:4px'>{val}</div>", unsafe_allow_html=True)
 
     selected_value = sum(w if b else 0 for w, b in zip(weights, st.session_state.bits))
     st.write(f"선택한 비트의 합: **{selected_value}**")
