@@ -1,6 +1,19 @@
 import streamlit as st
 import random
 
+# 커스텀 버튼 폰트 크기 줄이기
+st.markdown(
+    """
+    <style>
+    div.stButton > button {
+        font-size: 0.7rem !important;
+        padding: 0.2em 0.5em !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("🔢 10진수를 2진수로 변환하는 앱")
 
 # 1. 0~1023 사이의 랜덤한 10진수 생성 (세션에 저장)
