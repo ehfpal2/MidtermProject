@@ -8,6 +8,11 @@ st.markdown(
     div.stButton > button {
         font-size: 0.7rem !important;
         padding: 0.2em 0.5em !important;
+        white-space: nowrap !important;
+        min-width: 70px !important;
+        max-width: 100px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     </style>
     """,
@@ -40,25 +45,41 @@ if st.button("정답 확인"):
 
 # 3. 정답을 맞췄을 때만 버튼 생성
 if st.session_state.get('correct', False):
+
     st.write("아래 버튼을 눌러 2진수로 만들어보세요!")
-    # 버튼 상태 저장
     if 'bits' not in st.session_state or len(st.session_state.bits) != user_bits:
         st.session_state.bits = [False] * user_bits
 
     cols = st.columns(user_bits)
     weights = [2**i for i in reversed(range(user_bits))]  # MSB~LSB
 
-    # 각 열(비트)에 대해 버튼, 가중치, 선택값을 세로로 정렬
+    # 1. 버튼 행
     for i, col in enumerate(cols):
         with col:
             if st.button(f"{user_bits-i-1}번 비트", key=f"bit_btn_{i}"):
                 st.session_state.bits[i] = not st.session_state.bits[i]
+
+    # 2. 가중치 행
+    for i, col in enumerate(cols):
+        with col:
             st.markdown(f"<div style='text-align:center; color:gray; margin-top:4px'>{weights[i]}</div>", unsafe_allow_html=True)
+
+    # 3. 선택값 행
+    for i, col in enumerate(cols):
+        with col:
             val = "1" if st.session_state.bits[i] else "0"
             color = "#4CAF50" if st.session_state.bits[i] else "#ddd"
             st.markdown(f"<div style='text-align:center; background:{color}; border-radius:5px; padding:4px 0; margin-top:4px'>{val}</div>", unsafe_allow_html=True)
 
+    # 4. 합계 행 (각 열별로 합산값 표시, 선택된 비트만 값, 아니면 0)
+    for i, col in enumerate(cols):
+        with col:
+            show_val = weights[i] if st.session_state.bits[i] else 0
+            st.markdown(f"<div style='text-align:center; color:#333; margin-top:4px; font-size:0.9em'>{show_val}</div>", unsafe_allow_html=True)
+
+    # 5. 전체 합계
     selected_value = sum(w if b else 0 for w, b in zip(weights, st.session_state.bits))
+    st.write("")  # 간격
     st.write(f"선택한 비트의 합: **{selected_value}**")
 
     # 5. 최종적으로 정답 확인
