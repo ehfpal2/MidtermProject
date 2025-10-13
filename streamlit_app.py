@@ -6,7 +6,7 @@ st.markdown(
     """
     <style>
     div.stButton > button {
-        font-size: 0.5rem !important;
+        font-size: 0.7rem !important;
         padding: 0.2em 0.5em !important;
     }
     </style>
