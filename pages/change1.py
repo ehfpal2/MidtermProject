@@ -1,87 +1,93 @@
 import streamlit as st
 import random
 
+# 커스텀 버튼 폰트 크기 줄이기
+st.markdown(
+    """
+    <style>
+    div.stButton > button {
+        font-size: 0.7rem !important;
+        padding: 0.2em 0.5em !important;
+        white-space: nowrap !important;
+        min-width: 70px !important;
+        max-width: 100px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-st.title("💡 2진수를 10진수로 변환하는 앱")
+st.title("🔢 10진수를 2진수로 변환하는 앱")
 
-# 1. 1~10비트 길이의 랜덤 2진수 생성 (1이 반드시 포함되도록)
-if 'bit_len' not in st.session_state:
-    st.session_state.bit_len = random.randint(1, 10)
-if 'binary' not in st.session_state:
-    while True:
-        bits = [random.choice([0, 1]) for _ in range(st.session_state.bit_len)]
-        if bits.count(1) >= 2:  # 1이 두 개 이상 포함되어 있으면 OK
-            st.session_state.binary = bits
-            break
+# 1. 0~1023 사이의 랜덤한 10진수 생성 (세션에 저장)
+if 'decimal' not in st.session_state:
+    st.session_state.decimal = random.randint(0, 1023)
+decimal = st.session_state.decimal
 
-bit_len = st.session_state.bit_len
-binary = st.session_state.binary
+st.write(f"랜덤 10진수: **{decimal}**")
 
-# 2진수 표시 (MSB~LSB)
-bin_str = ''.join(str(b) for b in binary)
-st.write(f"랜덤 2진수: <span style='font-size:1.5em; letter-spacing:0.2em'><b>{bin_str}</b></span>", unsafe_allow_html=True)
-
-
-# 각 비트별로 입력 칸 생성 (MSB~LSB)
-st.write("각 비트 아래 칸에 1로 표현된 자리의 가중치를 입력하세요. (해당 비트가 1일 때는 숫자, 0일 때는 0 또는 빈칸)")
-cols = st.columns(bit_len)
-if 'user_weights' not in st.session_state or len(st.session_state.user_weights) != bit_len:
-    st.session_state.user_weights = [''] * bit_len
-
-for i, col in enumerate(cols):
-    with col:
-        # 비트값 가운데 정렬
-        st.markdown(f"<div style='text-align:center; font-weight:bold'>{binary[i]}</div>", unsafe_allow_html=True)
-        # 입력 칸 가운데 정렬 및 라벨 제거
-        st.markdown("""
-        <style>
-        .centered-input input {
-            text-align: center !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        st.session_state.user_weights[i] = st.text_input(
-            label=" ",  # 라벨 없이
-            value=st.session_state.user_weights[i],
-            key=f"weight_input_{i}",
-            placeholder=""
-        )
-        # 입력 칸에 클래스 적용 (streamlit 기본 input에는 직접 class 적용이 어려워 스타일로 전체 적용)
-
-# 정답 가중치 계산
-def get_weights(bits):
-    return [2**i for i, b in enumerate(reversed(bits)) if b == 1]
-
-answer_weights = get_weights(binary)
-
+# 2. 사용자에게 2진수로 몇 비트가 필요한지 입력 받기
+min_bits = decimal.bit_length() if decimal > 0 else 1
+user_bits = st.number_input(
+    "이 숫자를 2진수로 표현하려면 몇 비트가 필요할까요?", 
+    min_value=1, max_value=10, step=1
+)
 
 if st.button("정답 확인"):
-    try:
-        # 입력된 값 중 비어있지 않고, 해당 비트가 1인 칸만 추출
-        user_weights = [int(st.session_state.user_weights[i]) for i in range(bit_len) if binary[i] == 1 and st.session_state.user_weights[i].strip()]
-        if sorted(user_weights) == sorted(answer_weights):
-            st.success("정답입니다! 이제 각 가중치의 합을 계산해보세요.")
-            st.session_state.show_calc = True
-        else:
-            st.error(f"틀렸습니다. 정답: {answer_weights}")
-            st.session_state.show_calc = False
-    except Exception:
-        st.error("입력 형식이 올바르지 않습니다. 숫자만 입력하세요.")
+    if user_bits == min_bits:
+        st.success(f"정답입니다! {decimal}을(를) 2진수로 표현하려면 {min_bits}비트가 필요합니다.")
+        st.session_state.correct = True
+    else:
+        st.error(f"틀렸습니다. 다시 시도해보세요!")
+        st.session_state.correct = False
 
-# 2. 정답이면 계산기 표시
-if st.session_state.get('show_calc', False):
-    st.markdown("<span style='font-size:1.3em'>각 가중치를 더해 10진수 값을 입력하세요!</span>", unsafe_allow_html=True)
-    user_decimal = st.number_input("10진수 값 입력", min_value=0, step=1)
-    decimal_value = sum(answer_weights)
-    if st.button("최종 정답 확인"):
-        if user_decimal == decimal_value:
-            st.success(f"정답! 2진수 {bin_str}의 10진수 값은 {decimal_value}입니다.")
-        else:
-            st.error(f"틀렸습니다. 정답은 {decimal_value}입니다.")
+# 3. 정답을 맞췄을 때만 버튼 생성
+if st.session_state.get('correct', False):
 
-# 새 문제 버튼
-if st.button("새 문제"):
-    for k in ['bit_len', 'binary', 'show_calc']:
-        if k in st.session_state:
-            del st.session_state[k]
-    st.experimental_rerun()
+    st.write("아래 버튼을 눌러 2진수로 만들어보세요!")
+    if 'bits' not in st.session_state or len(st.session_state.bits) != user_bits:
+        st.session_state.bits = [False] * user_bits
+
+    cols = st.columns(user_bits)
+    weights = [2**i for i in reversed(range(user_bits))]  # MSB~LSB
+
+    # 1. 버튼 행
+    for i, col in enumerate(cols):
+        with col:
+            if st.button(f"{user_bits-i-1}번 비트", key=f"bit_btn_{i}"):
+                st.session_state.bits[i] = not st.session_state.bits[i]
+
+    # 2. 가중치 행
+    for i, col in enumerate(cols):
+        with col:
+            st.markdown(f"<div style='text-align:center; color:gray; margin-top:4px'>{weights[i]}</div>", unsafe_allow_html=True)
+
+    # 3. 선택값 행
+    for i, col in enumerate(cols):
+        with col:
+            val = "1" if st.session_state.bits[i] else "0"
+            color = "#4CAF50" if st.session_state.bits[i] else "#ddd"
+            st.markdown(f"<div style='text-align:center; background:{color}; border-radius:5px; padding:4px 0; margin-top:4px'>{val}</div>", unsafe_allow_html=True)
+
+    # 4. 합계 행 (각 열별로 합산값 표시, 선택된 비트만 값, 아니면 0)
+    for i, col in enumerate(cols):
+        with col:
+            show_val = weights[i] if st.session_state.bits[i] else 0
+            st.markdown(f"<div style='text-align:center; color:#333; margin-top:4px; font-size:0.9em'>{show_val}</div>", unsafe_allow_html=True)
+
+    # 5. 전체 합계
+    selected_value = sum(w if b else 0 for w, b in zip(weights, st.session_state.bits))
+    st.write("")  # 간격
+    st.write(f"선택한 비트의 합: **{selected_value}**")
+
+    # 5. 최종적으로 정답 확인
+    if selected_value == decimal:
+        st.success(f"정답! {decimal}의 2진수는 {bin(decimal)[2:].zfill(user_bits)} 입니다.")
+    else:
+        st.info("아직 정답이 아닙니다. 버튼을 조정해보세요.")
+
+    if st.button("새 문제"):
+        st.session_state.clear()
+        st.experimental_rerun()
