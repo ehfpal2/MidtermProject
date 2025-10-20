@@ -1,5 +1,28 @@
+# ...existing code...
 import streamlit as st
 import random
+
+# 안전한 rerun 헬퍼
+def _safe_rerun():
+    try:
+        st.experimental_rerun()
+    except AttributeError:
+        RerunException = None
+        try:
+            from streamlit.runtime.scriptrunner import RerunException as _RE
+            RerunException = _RE
+        except Exception:
+            try:
+                from streamlit.script_runner import RerunException as _RE
+                RerunException = _RE
+            except Exception:
+                RerunException = None
+
+        if RerunException is not None:
+            raise RerunException()
+        else:
+            # 마지막 수단으로 스크립트 중단
+            st.stop()
 
 # 커스텀 버튼 폰트 크기 줄이기
 st.markdown(
@@ -90,4 +113,4 @@ if st.session_state.get('correct', False):
 
     if st.button("새 문제"):
         st.session_state.clear()
-        st.experimental_rerun()
+        _safe_rerun()
