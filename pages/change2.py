@@ -59,7 +59,7 @@ decimal_value = sum(answer_weights)
 # 가중치 확인 버튼
 if st.button("정답 확인"):
     try:
-        user_weights = [int(st.session_state.user_weights[i]) for i in range(bit_len) if binary[i] == 1 and str(st.session_state.user_weights[i]).strip() != ""]
+        user_weights = [int(st.session_state.user_weights[i]) for i in range(bit_len) if binary[i] == 1 and st.session_state.user_weights[i].strip() != ""]
         if sorted(user_weights) == sorted(answer_weights):
             st.success("정답입니다! 이제 각 가중치의 합을 계산해보세요.")
             st.session_state.show_calc = True

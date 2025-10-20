@@ -24,11 +24,11 @@ st.write("원하는 변환 페이지를 왼쪽에서 선택하세요.")
 with st.container():
     if st.button("10진수 → 2진수 (change1)"):
         # 전체 URL이 아니라 페이지 이름(또는 간단한 값)만 설정
-        st.experimental_set_query_params(page="/workspaces/MidtermProject/pages/change1.py")
+        st.experimental_set_query_params(page="change1")
         st.experimental_rerun()
 
 
 with st.container():
     if st.button("2진수 → 10진수 (change2)"):
-        st.experimental_set_query_params(page="/workspaces/MidtermProject/pages/change2.py")
+        st.experimental_set_query_params(page="change2")
         st.experimental_rerun()
