@@ -90,4 +90,4 @@ if st.session_state.get('correct', False):
 
     if st.button("새 문제"):
         st.session_state.clear()
-        st.experimental_rerun()
+        st.rerun()
