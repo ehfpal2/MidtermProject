@@ -94,5 +94,5 @@ if st.button("새 문제"):
     for k in list(st.session_state.keys()):
         if k.startswith("weight_input_") or k == "user_decimal_input":
             del st.session_state[k]
-    st.experimental_rerun()
+    st.rerun()
 # ...existing code...
